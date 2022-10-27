@@ -1,22 +1,21 @@
-const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: '.env' });
 
-const app = express();
-
-app.use(express.json());
-app.use(cors());
-
-const PORT = 8080;
-
-app.listen(PORT, () =>{
-    console.log(`Server is running on PORT ${PORT}`)
-});
-
-mongoose.connect(process.env.DATABASE, {
-    useNewUrlParser: true,
+mongoose.connect(process.env.DATABASE,
+    {
         useUnifiedTopology: true,
-}).then(() => {
-    console.log('Database connected')
+        useNewUrlParser: true
+    }
+);
+mongoose.Promise = global.Promise;
+mongoose.connection.on('error', (err) => {
+    console.error('Database Connection Error');
 });
+
+require('./Models/Posts');
+
+const app = require('./app');
+
+const server = app.listen(3000, () => {
+    console.log('Express running → PORT 3000');
+})
