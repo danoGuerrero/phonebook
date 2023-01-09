@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import Axios from 'axios';
 import './App.css';
+import PhonesList from './components/phonesList';
 
 function App() {
   const [data, setData] = useState([]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState(0);
-  const [itemSelected, setItemSelected] = useState(null);
 
   useEffect(() => {
     Axios.get('http://localhost:8080/getPosts').then(res => {
       setData(res.data);
     })
   },[]);
+
+  const getData = () => {
+  Axios.get('http://localhost:8080/getPosts').then(res => {
+    setData(res.data);
+  })
+  }
 
   const changeName = () => {
     let nameValue = document.getElementById('name').value;
@@ -25,47 +31,10 @@ function App() {
   }
 
   const addNewNumber = () => {
-    Axios.post('http://localhost:8080/create', {name, phone});
+    Axios.post('http://localhost:8080/create', {name, phone}).then(() => {
+      getData();
+    });
   }
-  const onEditClick = (id) => {
-    setItemSelected(id);
-  };
-
-  const onSaveClick = (id) => {
-    const updatedPhone = document.getElementById(`phone_${id}`).value;
-    const param = { phone: updatedPhone };
-    Axios.put(`http://localhost:8080/post/${id}/update`, param);
-    setItemSelected(null);
-  };
-
-  const onDeleteClick = (id) => {
-    Axios.delete(`http://localhost:8080/delete/${id}`);
-  };
-
-  const mappingData = data.map((item) => {
-
-    const shouldEditable = itemSelected !== item._id;
-
-    return (
-      <div
-        className='items'
-        key={item._id}
-      >
-        <input id={`name_${item._id}`} type='text' placeholder={item.name} disabled={shouldEditable}></input>
-        <input id={`phone_${item._id}`}type='number' placeholder={item.phone} disabled={shouldEditable}></input>
-        <button
-          onClick={() => shouldEditable ? onEditClick(item._id) : onSaveClick(item._id)}
-        >
-          {shouldEditable ? "Edit" : "Save"}
-        </button>
-        <button
-          onClick={() => onDeleteClick(item._id)}
-        >
-          Delete
-        </button>
-      </div>
-    );
-  });
 
   return (
     <div className="container">
@@ -92,7 +61,11 @@ function App() {
       </button>
 
       <h4>Existing Phones</h4>
-      <div>{mappingData}</div>
+
+      <PhonesList
+        data={data}
+        getData={() => getData()}
+      />
     </div>
   );
 }
